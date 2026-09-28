@@ -8,6 +8,9 @@ import {
   toggleEstadoEstudianteAction,
   crearSeccionAction,
   reasignarSeccionDocenteAction,
+  actualizarPerfilPersonal,
+  resetearClavePersonal,
+  alternarEstadoPersonal,
 } from '@/app/actions/admin'
 import { crearUsuarioAction, RolUsuario } from '@/app/actions/usuarios'
 
@@ -42,6 +45,7 @@ export interface PerfilAdmin {
   nombres: string
   apellidos: string
   rol: RolUsuario
+  activo?: boolean
   seccion_id: number | null
   secciones?: {
     grado: number
@@ -80,7 +84,6 @@ function SelectorSeccionDocente({
   const [seccionId, setSeccionId] = useState<number | ''>(perfil.seccion_id || '')
   const [cargando, setCargando] = useState(false)
 
-  // Mantener sincronizado el selector si el servidor refresca el perfil
   useEffect(() => {
     setSeccionId(perfil.seccion_id || '')
   }, [perfil.seccion_id])
@@ -89,7 +92,6 @@ function SelectorSeccionDocente({
     const valor = e.target.value
     const nuevoId = valor === '' ? null : Number(valor)
 
-    // Validar exclusividad en cliente antes de mutar
     if (nuevoId && docentesPorSeccion[nuevoId] && nuevoId !== perfil.seccion_id) {
       alert(`Esta aula ya está asignada a: ${docentesPorSeccion[nuevoId]}.`)
       return
@@ -114,7 +116,7 @@ function SelectorSeccionDocente({
     <div className="flex items-center gap-2">
       <select
         value={seccionId}
-        disabled={cargando}
+        disabled={cargando || perfil.activo === false}
         onChange={handleCambio}
         className="text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
       >
@@ -142,6 +144,7 @@ function SelectorSeccionDocente({
 }
 
 export default function AdminGestionView({ secciones, estudiantes, perfiles }: Props) {
+  const router = useRouter()
   const [tab, setTab] = useState<'estudiantes' | 'secciones' | 'personal'>('estudiantes')
 
   // Filtros estudiantes
@@ -166,7 +169,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
   const [guardandoEstudiante, setGuardandoEstudiante] = useState(false)
   const [errorModalEstudiante, setErrorModalEstudiante] = useState<string | null>(null)
 
-  // Formulario nueva sección / año (Con selector de nivel institucional)
+  // Formulario nueva sección / año
   const [nivelEducativo, setNivelEducativo] = useState<'PRIMARIA' | 'MEDIA_GENERAL'>('PRIMARIA')
   const [nuevoGrado, setNuevoGrado] = useState(1)
   const [nuevaLetraSeccion, setNuevaLetraSeccion] = useState('')
@@ -184,6 +187,21 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
   const [guardandoPersonal, setGuardandoPersonal] = useState(false)
   const [errorModalPersonal, setErrorModalPersonal] = useState<string | null>(null)
 
+  // Estados para Edición de Personal
+  const [personalAEditar, setPersonalAEditar] = useState<PerfilAdmin | null>(null)
+  const [editNombres, setEditNombres] = useState('')
+  const [editApellidos, setEditApellidos] = useState('')
+  const [editRol, setEditRol] = useState<RolUsuario>('DOCENTE')
+  const [editSeccionId, setEditSeccionId] = useState<number | ''>('')
+  const [guardandoEdicion, setGuardandoEdicion] = useState(false)
+  const [errorEdicion, setErrorEdicion] = useState<string | null>(null)
+
+  // Estados para Reseteo de Contraseña de Personal
+  const [personalAResetear, setPersonalAResetear] = useState<PerfilAdmin | null>(null)
+  const [nuevaClaveAdmin, setNuevaClaveAdmin] = useState('')
+  const [guardandoReset, setGuardandoReset] = useState(false)
+  const [errorReset, setErrorReset] = useState<string | null>(null)
+
   const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null)
 
   const mostrarNotificacion = (texto: string, tipo: 'ok' | 'error') => {
@@ -193,7 +211,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
 
   // Mapa de secciones ya asignadas a algún docente titular
   const docentesPorSeccion = perfiles.reduce((acc, p) => {
-    if (p.rol === 'DOCENTE' && p.seccion_id) {
+    if (p.rol === 'DOCENTE' && p.seccion_id && p.activo !== false) {
       acc[p.seccion_id] = `${p.nombres} ${p.apellidos}`
     }
     return acc
@@ -302,6 +320,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
       setNuevoRepresentante('')
       setNuevoTelefonoRep('')
       setMostrarModalEstudiante(false)
+      router.refresh()
     } else {
       setErrorModalEstudiante(res.error || 'Error al inscribir estudiante.')
     }
@@ -326,6 +345,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
       const etiquetaNivel = nivelEducativo === 'PRIMARIA' ? `${nuevoGrado}° Grado` : `${nuevoGrado}° Año`
       mostrarNotificacion(`¡${etiquetaNivel} sección "${letraLimpia}" agregada con éxito!`, 'ok')
       setNuevaLetraSeccion('')
+      router.refresh()
     } else {
       mostrarNotificacion(res.error || 'Error al agregar sección.', 'error')
     }
@@ -348,7 +368,9 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
     }
 
     if (['DIRECTOR', 'DIRECTIVO'].includes(rolPersonal)) {
-      const directorActual = perfiles.find((p) => (p.rol as string) === 'DIRECTOR' || (p.rol as string) === 'DIRECTIVO')
+      const directorActual = perfiles.find(
+        (p) => (p.rol as string) === 'DIRECTOR' || (p.rol as string) === 'DIRECTIVO'
+      )
       if (directorActual) {
         setErrorModalPersonal(
           `Ya existe un Director titular en el plantel (${directorActual.nombres} ${directorActual.apellidos}). No está permitido registrar dos directores.`
@@ -404,6 +426,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
       setApellidosPersonal('')
       setSeccionPersonalId('')
       setMostrarModalPersonal(false)
+      router.refresh()
     } else {
       setErrorModalPersonal(res.error || 'Error al registrar usuario.')
     }
@@ -413,6 +436,99 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
     const accion = estadoActual ? 'desactivar' : 'activar'
     if (!confirm(`¿Estás seguro de que deseas ${accion} a este estudiante?`)) return
     await toggleEstadoEstudianteAction(id, estadoActual)
+    router.refresh()
+  }
+
+  // Abrir modal de edición de personal
+  const abrirEdicionPersonal = (p: PerfilAdmin) => {
+    setPersonalAEditar(p)
+    setEditNombres(p.nombres)
+    setEditApellidos(p.apellidos)
+    setEditRol(p.rol)
+    setEditSeccionId(p.seccion_id || '')
+    setErrorEdicion(null)
+  }
+
+  // Guardar edición de datos de personal
+  const handleGuardarEdicionPersonal = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!personalAEditar) return
+    setErrorEdicion(null)
+
+    if (!editNombres.trim() || !editApellidos.trim()) {
+      setErrorEdicion('Los nombres y apellidos no pueden estar vacíos.')
+      return
+    }
+
+    if (editRol === 'DOCENTE' && !editSeccionId) {
+      setErrorEdicion('Debes asignar una sección al docente.')
+      return
+    }
+
+    setGuardandoEdicion(true)
+    const res = await actualizarPerfilPersonal({
+      id: personalAEditar.id,
+      nombres: editNombres,
+      apellidos: editApellidos,
+      rol: editRol,
+      seccion_id: editRol === 'DOCENTE' ? Number(editSeccionId) : null,
+    })
+    setGuardandoEdicion(false)
+
+    if (res.ok) {
+      mostrarNotificacion('¡Personal institucional actualizado!', 'ok')
+      setPersonalAEditar(null)
+      router.refresh()
+    } else {
+      setErrorEdicion(res.error || 'Error al actualizar.')
+    }
+  }
+
+  // Guardar reseteo de contraseña de usuario
+  const handleGuardarResetClave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!personalAResetear) return
+    setErrorReset(null)
+
+    if (nuevaClaveAdmin.length < 6) {
+      setErrorReset('La clave debe contener al menos 6 caracteres.')
+      return
+    }
+
+    setGuardandoReset(true)
+    const res = await resetearClavePersonal(personalAResetear.id, nuevaClaveAdmin)
+    setGuardandoReset(false)
+
+    if (res.ok) {
+      mostrarNotificacion(`¡Contraseña restablecida para ${personalAResetear.nombres}!`, 'ok')
+      setPersonalAResetear(null)
+      setNuevaClaveAdmin('')
+    } else {
+      setErrorReset(res.error || 'Error al restablecer contraseña.')
+    }
+  }
+
+  // Alternar estado activo / baja lógica de personal
+  const handleToggleEstadoPersonal = async (p: PerfilAdmin) => {
+    const estadoActual = p.activo !== false
+    const accion = estadoActual ? 'desactivar (baja)' : 'reactivar'
+    if (
+      !confirm(
+        `¿Seguro que deseas ${accion} a ${p.nombres} ${p.apellidos}? ${
+          estadoActual ? 'Se liberará cualquier aula que tenga asignada.' : ''
+        }`
+      )
+    ) {
+      return
+    }
+
+    const res = await alternarEstadoPersonal(p.id, !estadoActual)
+    if (res.ok) {
+      mostrarNotificacion(res.mensaje || 'Estado de usuario actualizado.', 'ok')
+      router.refresh()
+    } else {
+      mostrarNotificacion(res.error || 'Error al cambiar estado.', 'error')
+    }
   }
 
   return (
@@ -764,50 +880,298 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     <th className="py-3 px-4">Cédula</th>
                     <th className="py-3 px-4">Nombre Completo</th>
                     <th className="py-3 px-4">Cargo / Rol</th>
-                    <th className="py-3 px-4">Aula Asignada (Gestión de Sección)</th>
+                    <th className="py-3 px-4">Aula Asignada</th>
+                    <th className="py-3 px-4 text-center">Estado</th>
+                    <th className="py-3 px-4 text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
-                  {perfiles.map((p) => (
-                    <tr key={p.id} className="hover:bg-slate-50/60 transition">
-                      <td className="py-3 px-4 font-mono text-xs text-slate-600">
-                        {p.cedula || 'N/A'}
-                      </td>
-                      <td className="py-3 px-4 font-medium text-slate-900">
-                        {p.nombres} {p.apellidos}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                            ['ADMIN', 'ADMINISTRATIVO'].includes(p.rol as string)
-                              ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                              : ['DIRECTOR', 'DIRECTIVO'].includes(p.rol as string)
-                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                              : (p.rol as string) === 'SUBDIRECTOR'
-                              ? 'bg-cyan-50 text-cyan-700 border border-cyan-200'
-                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          }`}
-                        >
-                          {p.rol}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-xs font-semibold text-slate-700">
-                        {p.rol === 'DOCENTE' ? (
-                          <SelectorSeccionDocente
-                            perfil={p}
-                            secciones={secciones}
-                            docentesPorSeccion={docentesPorSeccion}
-                            onActualizado={mostrarNotificacion}
-                          />
-                        ) : (
-                          <span className="text-slate-400">Supervisión Institucional</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {perfiles.map((p) => {
+                    const estaActivo = p.activo !== false
+                    return (
+                      <tr key={p.id} className={`hover:bg-slate-50/60 transition ${!estaActivo ? 'opacity-60 bg-slate-50/30' : ''}`}>
+                        <td className="py-3 px-4 font-mono text-xs text-slate-600">
+                          {p.cedula || 'N/A'}
+                        </td>
+                        <td className="py-3 px-4 font-medium text-slate-900">
+                          {p.nombres} {p.apellidos}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                              ['ADMIN', 'ADMINISTRATIVO'].includes(p.rol as string)
+                                ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                : ['DIRECTOR', 'DIRECTIVO'].includes(p.rol as string)
+                                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                : (p.rol as string) === 'SUBDIRECTOR'
+                                ? 'bg-cyan-50 text-cyan-700 border border-cyan-200'
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}
+                          >
+                            {p.rol}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-xs font-semibold text-slate-700">
+                          {p.rol === 'DOCENTE' ? (
+                            <SelectorSeccionDocente
+                              perfil={p}
+                              secciones={secciones}
+                              docentesPorSeccion={docentesPorSeccion}
+                              onActualizado={mostrarNotificacion}
+                            />
+                          ) : (
+                            <span className="text-slate-400">Supervisión Institucional</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span
+                            className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                              estaActivo
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-slate-100 text-slate-500 border border-slate-300'
+                            }`}
+                          >
+                            {estaActivo ? 'Activo' : 'Inactivo'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => abrirEdicionPersonal(p)}
+                              title="Editar datos de personal"
+                              className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPersonalAResetear(p)
+                                setNuevaClaveAdmin('')
+                                setErrorReset(null)
+                              }}
+                              title="Restablecer contraseña"
+                              className="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition"
+                            >
+                              🔑
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleEstadoPersonal(p)}
+                              title={estaActivo ? 'Desactivar usuario (baja lógica)' : 'Reactivar usuario'}
+                              className={`p-1.5 rounded-lg transition ${
+                                estaActivo
+                                  ? 'text-rose-600 hover:text-rose-800 hover:bg-rose-50'
+                                  : 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50'
+                              }`}
+                            >
+                              {estaActivo ? '🚫' : '🔄'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PARA EDITAR PERSONAL */}
+      {personalAEditar && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900">Editar Personal Institucional</h3>
+              <button
+                type="button"
+                onClick={() => setPersonalAEditar(null)}
+                className="text-slate-400 hover:text-slate-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {errorEdicion && (
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <span>⚠️</span>
+                <span>{errorEdicion}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleGuardarEdicionPersonal} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <span className="text-xs text-slate-400 block font-mono">
+                    Cédula: {personalAEditar.cedula || 'No registrada'}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                    Nombres *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editNombres}
+                    onChange={(e) => setEditNombres(filtrarSoloLetras(e.target.value))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                    Apellidos *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editApellidos}
+                    onChange={(e) => setEditApellidos(filtrarSoloLetras(e.target.value))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                    Rol Institucional *
+                  </label>
+                  <select
+                    value={editRol}
+                    onChange={(e) => {
+                      setEditRol(e.target.value as RolUsuario)
+                      setErrorEdicion(null)
+                    }}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="DOCENTE">DOCENTE (Toma asistencia en su aula)</option>
+                    <option value="SUBDIRECTOR">SUBDIRECTOR (Supervisión institucional)</option>
+                    <option value="DIRECTOR">DIRECTOR (Gestión y dirección titular)</option>
+                    <option value="ADMINISTRATIVO">ADMINISTRATIVO (Control de Estudios)</option>
+                    <option value="ADMIN">ADMINISTRADOR (Gestión técnica total)</option>
+                  </select>
+                </div>
+
+                {editRol === 'DOCENTE' && (
+                  <div className="col-span-2 bg-blue-50/60 p-3.5 rounded-xl border border-blue-200 space-y-1.5">
+                    <label className="block text-xs font-bold text-blue-900 uppercase tracking-wider">
+                      Aula Asignada *
+                    </label>
+                    <select
+                      value={editSeccionId}
+                      onChange={(e) => setEditSeccionId(e.target.value ? Number(e.target.value) : '')}
+                      required
+                      className="w-full border border-blue-300 bg-white rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">-- Seleccionar Aula --</option>
+                      {secciones.map((sec) => {
+                        const ocupadaPor = docentesPorSeccion[Number(sec.id)]
+                        const esPropia = Number(sec.id) === personalAEditar.seccion_id
+                        const nombreAula = formatearNivelEducativo(sec.grado, sec.seccion, sec.nivel)
+                        return (
+                          <option
+                            key={sec.id}
+                            value={sec.id}
+                            disabled={Boolean(ocupadaPor && !esPropia)}
+                            className={ocupadaPor && !esPropia ? 'text-slate-400 bg-slate-100' : 'text-slate-800'}
+                          >
+                            {nombreAula} {ocupadaPor && !esPropia ? `(Ocupada por: ${ocupadaPor})` : '✓ Disponible'}
+                          </option>
+                        )
+                      })}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setPersonalAEditar(null)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardandoEdicion}
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold text-xs rounded-xl shadow-sm transition"
+                >
+                  {guardandoEdicion ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PARA RESTABLECER CONTRASEÑA */}
+      {personalAResetear && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900">Restablecer Clave</h3>
+              <button
+                type="button"
+                onClick={() => setPersonalAResetear(null)}
+                className="text-slate-400 hover:text-slate-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500">
+              Establece una nueva clave para{' '}
+              <strong className="text-slate-800">
+                {personalAResetear.nombres} {personalAResetear.apellidos}
+              </strong>
+              . Podrá cambiarla luego desde su perfil.
+            </p>
+
+            {errorReset && (
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <span>⚠️</span>
+                <span>{errorReset}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleGuardarResetClave} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                  Nueva Contraseña Temporal *
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="Mínimo 6 caracteres"
+                  value={nuevaClaveAdmin}
+                  onChange={(e) => setNuevaClaveAdmin(e.target.value)}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setPersonalAResetear(null)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardandoReset}
+                  className="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white font-semibold text-xs rounded-xl shadow-sm transition"
+                >
+                  {guardandoReset ? 'Guardando...' : 'Cambiar Clave'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

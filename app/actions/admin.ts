@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
@@ -287,11 +288,11 @@ export async function importarEstudiantesMasivosAction(
     total: totalProcesados,
   }
 }
+
 // 5. Asignar o Cambiar Sección a un Docente
 export async function asignarSeccionDocenteAction(docenteId: string, nuevaSeccionId: number | null) {
   const supabase = await getSupabaseClient()
 
-  // Verificar sesión y permisos
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -300,7 +301,6 @@ export async function asignarSeccionDocenteAction(docenteId: string, nuevaSeccio
     return { success: false, error: 'Sesión no autorizada o expirada.' }
   }
 
-  // Actualizar la sección en el perfil del docente
   const { error } = await supabase
     .from('perfiles')
     .update({ seccion_id: nuevaSeccionId })
@@ -316,6 +316,7 @@ export async function asignarSeccionDocenteAction(docenteId: string, nuevaSeccio
 
   return { success: true }
 }
+
 export async function reasignarSeccionDocenteAction(
   usuarioId: string,
   nuevaSeccionId: number | null
@@ -370,7 +371,6 @@ export async function reasignarSeccionDocenteAction(
     return { success: false, error: `Error en base de datos: ${error.message}` }
   }
 
-  // Si data está vacío, significa que el RLS de Supabase bloqueó el UPDATE silenciosamente
   if (!data || data.length === 0) {
     return {
       success: false,
@@ -378,10 +378,144 @@ export async function reasignarSeccionDocenteAction(
     }
   }
 
-  // Forzar invalidación de rutas en el servidor
   revalidatePath('/admin')
   revalidatePath('/dashboard')
   revalidatePath('/')
 
   return { success: true }
+}
+
+// ==========================================
+// GESTIÓN ADMINISTRATIVA DE PERSONAL
+// ==========================================
+
+// Cliente con service_role para operaciones privilegiadas (auth y bypass de RLS)
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!url || !serviceKey) {
+    throw new Error('Falta la variable de entorno SUPABASE_SERVICE_ROLE_KEY.')
+  }
+
+  return createClient(url, serviceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+}
+
+// 6. Editar datos de personal institucional
+export async function actualizarPerfilPersonal(formData: {
+  id: string
+  nombres: string
+  apellidos: string
+  rol: string
+  seccion_id: number | null
+}) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin()
+
+    const nombresLimpios = formData.nombres?.trim()
+    const apellidosLimpios = formData.apellidos?.trim()
+
+    if (!nombresLimpios || !apellidosLimpios) {
+      return { ok: false, error: 'Los nombres y apellidos son obligatorios.' }
+    }
+
+    // Si deja de ser DOCENTE, se desvincula cualquier aula
+    const seccionFinal = formData.rol === 'DOCENTE' ? formData.seccion_id : null
+
+    // Validar conflicto de aula
+    if (seccionFinal) {
+      const { data: ocupada } = await supabaseAdmin
+        .from('perfiles')
+        .select('id, nombres, apellidos')
+        .eq('seccion_id', seccionFinal)
+        .neq('id', formData.id)
+        .eq('activo', true)
+        .maybeSingle()
+
+      if (ocupada) {
+        return {
+          ok: false,
+          error: `Esa aula ya está asignada al docente ${ocupada.nombres} ${ocupada.apellidos}.`,
+        }
+      }
+    }
+
+    const { error } = await supabaseAdmin
+      .from('perfiles')
+      .update({
+        nombres: nombresLimpios,
+        apellidos: apellidosLimpios,
+        rol: formData.rol,
+        seccion_id: seccionFinal,
+      })
+      .eq('id', formData.id)
+
+    if (error) throw error
+
+    revalidatePath('/admin')
+    revalidatePath('/dashboard')
+    revalidatePath('/perfil')
+    revalidatePath('/')
+
+    return { ok: true, mensaje: 'Personal actualizado correctamente.' }
+  } catch (err: any) {
+    return { ok: false, error: err.message || 'Error al actualizar perfil.' }
+  }
+}
+
+// 7. Resetear contraseña de un usuario desde el panel
+export async function resetearClavePersonal(usuarioId: string, nuevaClave: string) {
+  try {
+    if (!nuevaClave || nuevaClave.length < 6) {
+      return { ok: false, error: 'La nueva contraseña debe tener al menos 6 caracteres.' }
+    }
+
+    const supabaseAdmin = getSupabaseAdmin()
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(usuarioId, {
+      password: nuevaClave,
+    })
+
+    if (error) throw error
+
+    return { ok: true, mensaje: 'Contraseña restablecida con éxito.' }
+  } catch (err: any) {
+    return { ok: false, error: err.message || 'Error al restablecer la contraseña.' }
+  }
+}
+
+// 8. Eliminación lógica / Desactivación de personal
+export async function alternarEstadoPersonal(usuarioId: string, nuevoEstado: boolean) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin()
+
+    // Si se desactiva, se libera el aula para que no quede ocupada
+    const actualizacion: { activo: boolean; seccion_id?: null } = { activo: nuevoEstado }
+    if (!nuevoEstado) {
+      actualizacion.seccion_id = null
+    }
+
+    const { error } = await supabaseAdmin
+      .from('perfiles')
+      .update(actualizacion)
+      .eq('id', usuarioId)
+
+    if (error) throw error
+
+    revalidatePath('/admin')
+    revalidatePath('/dashboard')
+    revalidatePath('/')
+
+    return {
+      ok: true,
+      mensaje: nuevoEstado ? 'Usuario reactivado.' : 'Personal desactivado y aula liberada.',
+    }
+  } catch (err: any) {
+    return { ok: false, error: err.message || 'Error al alternar estado del usuario.' }
+  }
 }

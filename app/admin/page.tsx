@@ -81,7 +81,7 @@ export default async function AdminPage() {
 
   const estudiantes: EstudianteAdmin[] = (estudiantesData as unknown as EstudianteAdmin[]) || []
 
-  // 3. Obtener todos los perfiles de usuarios registrados con su aula (incluyendo nivel)
+  // 3. Obtener todos los perfiles de usuarios registrados con su aula y estado
   const { data: perfilesData } = await supabase
     .from('perfiles')
     .select(`
@@ -90,6 +90,7 @@ export default async function AdminPage() {
       nombres,
       apellidos,
       rol,
+      activo,
       seccion_id,
       secciones:seccion_id (
         grado,

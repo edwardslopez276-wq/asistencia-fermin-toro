@@ -29,6 +29,7 @@ export default function Navbar({ perfil }: Props) {
     { href: '/reportes', etiqueta: 'Historial y Reportes', icono: '📊' },
     { href: '/justificativos', etiqueta: 'Justificativos', icono: '📋' },
     ...(esAdminOControlEstudios ? [{ href: '/admin', etiqueta: 'Panel Admin', icono: '⚙️' }] : []),
+    { href: '/perfil', etiqueta: 'Mi Perfil', icono: '👤' },
   ]
 
   // Ruta base según jerarquía
