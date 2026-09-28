@@ -1,69 +1,165 @@
-import Image from "next/image";
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import AsistenciaForm from '@/components/AsistenciaForm'
+import Navbar from '@/components/Navbar'
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+export const dynamic = 'force-dynamic'
+
+interface Estudiante {
+  id: number
+  cedula_escolar: string
+  nombres: string
+  apellidos: string
+}
+
+interface Props {
+  searchParams: Promise<{ seccion?: string; fecha?: string }>
+}
+
+export default async function HomePage({ searchParams }: Props) {
+  const params = await searchParams
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+      },
+    }
+  )
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  // 1. Obtener perfil completo con los datos exactos del aula asignada (incluyendo nivel)
+  const { data: perfil } = await supabase
+    .from('perfiles')
+    .select(`
+      id,
+      nombres,
+      apellidos,
+      rol,
+      seccion_id,
+      secciones:seccion_id (
+        id,
+        grado,
+        seccion,
+        nivel
+      )
+    `)
+    .eq('id', user.id)
+    .single()
+
+  const rol = perfil?.rol || ''
+
+  // Redirecciones por jerarquía de roles
+  if (['DIRECTOR', 'SUBDIRECTOR', 'DIRECTIVO'].includes(rol)) {
+    redirect('/dashboard')
+  }
+
+  if (['ADMIN', 'ADMINISTRATIVO'].includes(rol)) {
+    redirect('/admin')
+  }
+
+  const esDocente = rol === 'DOCENTE'
+
+  // 2. Consulta de secciones con soporte de 'nivel'
+  let querySecciones = supabase
+    .from('secciones')
+    .select('id, grado, seccion, nivel')
+    .order('grado', { ascending: true })
+    .order('seccion', { ascending: true })
+
+  // Si es docente, limitar la lista ÚNICAMENTE a su sección asignada
+  if (esDocente) {
+    if (perfil?.seccion_id) {
+      querySecciones = querySecciones.eq('id', perfil.seccion_id)
+    } else {
+      // Si el docente no tiene sección asignada todavía
+      querySecciones = querySecciones.eq('id', -1)
+    }
+  }
+
+  const { data: seccionesData } = await querySecciones
+  const secciones = seccionesData || []
+
+  // 3. Determinar la sección activa de forma inequívoca
+  let seccionActivaId: number | null = null
+
+  if (esDocente) {
+    // Para el docente SIEMPRE manda su perfil.seccion_id
+    seccionActivaId = perfil?.seccion_id ? Number(perfil.seccion_id) : null
+  } else {
+    // Para otros roles que pasen asistencia: parámetro URL o la primera sección
+    seccionActivaId = params.seccion
+      ? Number(params.seccion)
+      : secciones[0]?.id
+      ? Number(secciones[0].id)
+      : null
+  }
+
+  const hoy = params.fecha || new Date().toISOString().split('T')[0]
+
+  // 4. Si el docente aún no tiene sección asignada por la dirección
+  if (esDocente && !seccionActivaId) {
+    return (
+      <main className="min-h-screen bg-slate-100 p-6 md:p-10">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <Navbar perfil={perfil} />
+          <div className="bg-white rounded-2xl border border-amber-200 p-8 text-center space-y-3 shadow-xs">
+            <span className="text-4xl">⚠️</span>
+            <h2 className="text-lg font-bold text-slate-800">Sin Aula Asignada</h2>
+            <p className="text-sm text-slate-600 max-w-md mx-auto">
+              Aún no tienes un grado o año asignado en el sistema. Solicita al personal directivo o de control de estudios que te asigne tu sección desde el módulo de administración.
+            </p>
+          </div>
         </div>
       </main>
-    </div>
-  );
+    )
+  }
+
+  // 5. Cargar nómina de estudiantes del aula activa
+  let estudiantes: Estudiante[] = []
+  if (seccionActivaId !== null) {
+    const { data } = await supabase
+      .from('estudiantes')
+      .select('id, cedula_escolar, nombres, apellidos')
+      .eq('seccion_actual_id', seccionActivaId)
+      .eq('activo', true)
+      .order('apellidos', { ascending: true })
+
+    estudiantes = (data as Estudiante[]) || []
+  }
+
+  // 6. Asistencias ya guardadas para esa fecha
+  const { data: asistencias } = await supabase
+    .from('asistencias')
+    .select('estudiante_id, estado, observacion')
+    .eq('fecha', hoy)
+
+  return (
+    <main className="min-h-screen bg-slate-100 p-6 md:p-10">
+      <div className="max-w-5xl mx-auto space-y-6">
+        <Navbar perfil={perfil} />
+
+        <AsistenciaForm
+          key={`${seccionActivaId}-${hoy}`}
+          secciones={secciones}
+          estudiantesIniciales={estudiantes}
+          asistenciasPrevias={asistencias || []}
+          fechaSeleccionada={hoy}
+          seccionSeleccionadaId={seccionActivaId ? String(seccionActivaId) : ''}
+        />
+      </div>
+    </main>
+  )
 }
