@@ -177,10 +177,10 @@ export default function AsistenciaForm({
   const totalRetardos = Object.values(estados).filter((e) => e === 'RETARDO').length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {mensaje && (
         <div
-          className={`p-4 rounded-xl text-sm font-medium ${
+          className={`p-3.5 sm:p-4 rounded-xl text-xs sm:text-sm font-medium ${
             mensaje.tipo === 'ok'
               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
               : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -190,17 +190,17 @@ export default function AsistenciaForm({
         </div>
       )}
 
-      {/* Selector de Sección y Fecha */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-4">
+      {/* Selector de Sección y Fecha + Botones de Acción */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full lg:w-auto">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+            <label className="block text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
               Sección
             </label>
             <select
               value={seccionSeleccionadaId}
               onChange={(e) => cambiarSeccionOFecha(e.target.value, fechaSeleccionada)}
-              className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {secciones.map((sec) => (
                 <option key={sec.id} value={sec.id}>
@@ -211,71 +211,71 @@ export default function AsistenciaForm({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+            <label className="block text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
               Fecha
             </label>
             <input
               type="date"
               value={fechaSeleccionada}
               onChange={(e) => cambiarSeccionOFecha(seccionSeleccionadaId, e.target.value)}
-              className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
           <button
             type="button"
             onClick={marcarTodosPresentes}
-            className="text-xs font-semibold px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition cursor-pointer"
+            className="w-full sm:w-auto text-xs font-bold px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition text-center"
           >
-            ✓ Todos Presentes
+            ✓ Todos
           </button>
           <button
             type="button"
             disabled={isPending || estudiantesIniciales.length === 0}
             onClick={handleGuardar}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-1.5"
           >
-            {isPending ? 'Guardando...' : '💾 Guardar Asistencia'}
+            {isPending ? 'Guardando...' : '💾 Guardar'}
           </button>
         </div>
       </div>
 
-      {/* Contadores resumidos */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-center">
-          <p className="text-xs font-bold text-emerald-800 uppercase">Presentes</p>
-          <p className="text-xl font-extrabold text-emerald-700">{totalPresentes}</p>
+      {/* Contadores resumidos táctiles */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="bg-emerald-50 border border-emerald-200 p-2.5 sm:p-3 rounded-xl text-center">
+          <p className="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase">Presentes</p>
+          <p className="text-lg sm:text-2xl font-black text-emerald-700">{totalPresentes}</p>
         </div>
-        <div className="bg-rose-50 border border-rose-200 p-3 rounded-xl text-center">
-          <p className="text-xs font-bold text-rose-800 uppercase">Ausentes</p>
-          <p className="text-xl font-extrabold text-rose-700">{totalAusentes}</p>
+        <div className="bg-rose-50 border border-rose-200 p-2.5 sm:p-3 rounded-xl text-center">
+          <p className="text-[10px] sm:text-xs font-bold text-rose-800 uppercase">Ausentes</p>
+          <p className="text-lg sm:text-2xl font-black text-rose-700">{totalAusentes}</p>
         </div>
-        <div className="bg-blue-50 border border-blue-200 p-3 rounded-xl text-center">
-          <p className="text-xs font-bold text-blue-800 uppercase">Justificados</p>
-          <p className="text-xl font-extrabold text-blue-700">{totalJustificados}</p>
+        <div className="bg-blue-50 border border-blue-200 p-2.5 sm:p-3 rounded-xl text-center">
+          <p className="text-[10px] sm:text-xs font-bold text-blue-800 uppercase">Justificados</p>
+          <p className="text-lg sm:text-2xl font-black text-blue-700">{totalJustificados}</p>
         </div>
-        <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-center">
-          <p className="text-xs font-bold text-amber-800 uppercase">Retardos</p>
-          <p className="text-xl font-extrabold text-amber-700">{totalRetardos}</p>
+        <div className="bg-amber-50 border border-amber-200 p-2.5 sm:p-3 rounded-xl text-center">
+          <p className="text-[10px] sm:text-xs font-bold text-amber-800 uppercase">Retardos</p>
+          <p className="text-lg sm:text-2xl font-black text-amber-700">{totalRetardos}</p>
         </div>
       </div>
 
-      {/* Lista de Alumnos */}
+      {/* Lista de Alumnos Adaptativa */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-800">
+        <div className="p-3.5 sm:p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <h3 className="text-xs sm:text-sm font-bold text-slate-800">
             Nómina de Estudiantes ({estudiantesIniciales.length})
           </h3>
-          <span className="text-xs text-slate-400">
-            Presiona 📝 para escribir una nota o incidencia puntual
+          <span className="text-[11px] text-slate-400">
+            Usa el botón 📝 para incidencias puntuales
           </span>
         </div>
 
         <div className="divide-y divide-slate-100">
           {estudiantesIniciales.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 text-sm">
+            <div className="p-8 text-center text-slate-400 text-xs sm:text-sm">
               No hay estudiantes inscritos en esta sección.
             </div>
           ) : (
@@ -285,29 +285,33 @@ export default function AsistenciaForm({
               const estaExpandido = Boolean(expandidoObs[est.id])
 
               return (
-                <div key={est.id} className="p-4 hover:bg-slate-50/60 transition space-y-2">
+                <div
+                  key={est.id}
+                  className="p-3.5 sm:p-4 hover:bg-slate-50/60 transition space-y-3 sm:space-y-2"
+                >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-mono text-slate-400 w-5 text-right">
+                    {/* Datos del estudiante */}
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xs font-mono font-bold text-slate-400 w-6 text-right shrink-0">
                         {index + 1}.
                       </span>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
                           {est.apellidos}, {est.nombres}
                         </p>
-                        <p className="text-xs font-mono text-slate-400">
+                        <p className="text-[11px] font-mono text-slate-400 mt-0.5">
                           {est.cedula_escolar}
                         </p>
                       </div>
                     </div>
 
-                    {/* Botones de marcación (P, A, J, R) y Botón Nota (📝) */}
-                    <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                    {/* Botones de marcación táctiles (P, A, J, R) + Botón Nota */}
+                    <div className="flex items-stretch sm:items-center gap-1.5 w-full sm:w-auto">
                       <button
                         type="button"
                         onClick={() => setEstadoAlumno(est.id, 'PRESENTE')}
                         title="Presente"
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
+                        className={`flex-1 sm:flex-none px-3.5 py-2.5 sm:py-1.5 text-xs font-black rounded-xl transition ${
                           estadoActual === 'PRESENTE'
                             ? 'bg-emerald-600 text-white shadow-xs'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -319,7 +323,7 @@ export default function AsistenciaForm({
                         type="button"
                         onClick={() => setEstadoAlumno(est.id, 'AUSENTE')}
                         title="Ausente"
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
+                        className={`flex-1 sm:flex-none px-3.5 py-2.5 sm:py-1.5 text-xs font-black rounded-xl transition ${
                           estadoActual === 'AUSENTE'
                             ? 'bg-rose-600 text-white shadow-xs'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -331,7 +335,7 @@ export default function AsistenciaForm({
                         type="button"
                         onClick={() => setEstadoAlumno(est.id, 'JUSTIFICADO')}
                         title="Justificado"
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
+                        className={`flex-1 sm:flex-none px-3.5 py-2.5 sm:py-1.5 text-xs font-black rounded-xl transition ${
                           estadoActual === 'JUSTIFICADO'
                             ? 'bg-blue-600 text-white shadow-xs'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -343,7 +347,7 @@ export default function AsistenciaForm({
                         type="button"
                         onClick={() => setEstadoAlumno(est.id, 'RETARDO')}
                         title="Retardo"
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
+                        className={`flex-1 sm:flex-none px-3.5 py-2.5 sm:py-1.5 text-xs font-black rounded-xl transition ${
                           estadoActual === 'RETARDO'
                             ? 'bg-amber-600 text-white shadow-xs'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -352,12 +356,12 @@ export default function AsistenciaForm({
                         R
                       </button>
 
-                      {/* Botón desplegable para incidencia */}
+                      {/* Botón Nota/Incidencia */}
                       <button
                         type="button"
                         onClick={() => toggleExpandirObs(est.id)}
                         title="Añadir nota o incidencia"
-                        className={`ml-2 px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition flex items-center gap-1 cursor-pointer ${
+                        className={`px-3 py-2.5 sm:py-1.5 text-xs font-semibold rounded-xl border transition flex items-center justify-center gap-1 shrink-0 ${
                           tieneObservacion
                             ? 'bg-amber-50 text-amber-800 border-amber-300'
                             : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'
@@ -371,16 +375,16 @@ export default function AsistenciaForm({
                     </div>
                   </div>
 
-                  {/* Input de incidencia */}
+                  {/* Input de incidencia adaptable */}
                   {(estaExpandido || tieneObservacion) && (
-                    <div className="pt-2 pl-8 pr-2">
+                    <div className="pt-1 sm:pl-8">
                       <div className="flex items-center gap-2">
                         <input
                           type="text"
-                          placeholder="Añadir incidencia (ej: Llegó a las 7:45 AM, se retiró por fiebre)..."
+                          placeholder="Nota puntual (ej: Llegó tarde, fiebre)..."
                           value={observaciones[est.id] || ''}
                           onChange={(e) => setObservacionAlumno(est.id, e.target.value)}
-                          className="w-full border border-slate-200 bg-slate-50/70 focus:bg-white rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
+                          className="w-full border border-slate-200 bg-slate-50/80 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
                         />
                         {tieneObservacion && (
                           <button
@@ -389,7 +393,7 @@ export default function AsistenciaForm({
                               setObservacionAlumno(est.id, '')
                               setExpandidoObs((prev) => ({ ...prev, [est.id]: false }))
                             }}
-                            className="text-slate-400 hover:text-rose-500 text-xs px-1 cursor-pointer"
+                            className="text-slate-400 hover:text-rose-500 text-xs px-2 py-1.5 rounded-lg hover:bg-slate-100"
                             title="Limpiar nota"
                           >
                             ✕

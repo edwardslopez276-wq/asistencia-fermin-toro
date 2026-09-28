@@ -112,13 +112,13 @@ export default async function HomePage({ searchParams }: Props) {
   // 4. Si el docente aún no tiene sección asignada por la dirección
   if (esDocente && !seccionActivaId) {
     return (
-      <main className="min-h-screen bg-slate-100 p-6 md:p-10">
-        <div className="max-w-5xl mx-auto space-y-6">
+      <main className="min-h-screen bg-slate-100 p-3 sm:p-6 md:p-10">
+        <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
           <Navbar perfil={perfil} />
-          <div className="bg-white rounded-2xl border border-amber-200 p-8 text-center space-y-3 shadow-xs">
-            <span className="text-4xl">⚠️</span>
-            <h2 className="text-lg font-bold text-slate-800">Sin Aula Asignada</h2>
-            <p className="text-sm text-slate-600 max-w-md mx-auto">
+          <div className="bg-white rounded-2xl border border-amber-200 p-6 sm:p-8 text-center space-y-3 shadow-xs">
+            <span className="text-3xl sm:text-4xl">⚠️</span>
+            <h2 className="text-base sm:text-lg font-bold text-slate-800">Sin Aula Asignada</h2>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
               Aún no tienes un grado o año asignado en el sistema. Solicita al personal directivo o de control de estudios que te asigne tu sección desde el módulo de administración.
             </p>
           </div>
@@ -147,8 +147,8 @@ export default async function HomePage({ searchParams }: Props) {
     .eq('fecha', hoy)
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6 md:p-10">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <main className="min-h-screen bg-slate-100 p-3 sm:p-6 md:p-10">
+      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
         <Navbar perfil={perfil} />
 
         <AsistenciaForm

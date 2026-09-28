@@ -10,13 +10,17 @@ export default function LogoutButton() {
 
   const handleLogout = async () => {
     setLoading(true)
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    await supabase.auth.signOut()
-    router.refresh()
-    router.push('/login')
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      await supabase.auth.signOut()
+      router.refresh()
+      router.push('/login')
+    } catch {
+      setLoading(false)
+    }
   }
 
   return (
@@ -24,9 +28,11 @@ export default function LogoutButton() {
       type="button"
       onClick={handleLogout}
       disabled={loading}
-      className="text-xs font-semibold px-3 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 rounded-lg transition disabled:opacity-50"
+      title="Cerrar sesión institucional"
+      className="w-full sm:w-auto text-xs font-semibold px-3 py-2 sm:py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl transition flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
     >
-      {loading ? 'Cerrando...' : 'Cerrar Sesión'}
+      <span>🚪</span>
+      <span>{loading ? 'Cerrando...' : 'Cerrar Sesión'}</span>
     </button>
   )
 }

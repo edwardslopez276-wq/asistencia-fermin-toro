@@ -92,10 +92,10 @@ export default function JustificativosView({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       {/* Columna Izquierda: Formulario de Registro */}
-      <div className="lg:col-span-1 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit space-y-4">
-        <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
+      <div className="lg:col-span-1 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm h-fit space-y-4">
+        <h2 className="text-sm sm:text-base font-bold text-slate-900 border-b border-slate-100 pb-2.5">
           Registrar Permiso o Reposo
         </h2>
 
@@ -111,7 +111,7 @@ export default function JustificativosView({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4 text-xs">
           <div>
             <label className="block font-semibold text-slate-600 mb-1">Buscar Estudiante</label>
             <input
@@ -119,14 +119,14 @@ export default function JustificativosView({
               placeholder="Escribe cédula o nombre..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
             />
 
             <select
               value={estudianteId}
               onChange={(e) => setEstudianteId(e.target.value)}
               required
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
             >
               <option value="">-- Selecciona el alumno --</option>
               {estudiantesFiltrados.map((est) => (
@@ -137,7 +137,7 @@ export default function JustificativosView({
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
               <label className="block font-semibold text-slate-600 mb-1">Desde</label>
               <input
@@ -145,7 +145,7 @@ export default function JustificativosView({
                 value={fechaInicio}
                 onChange={(e) => setFechaInicio(e.target.value)}
                 required
-                className="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -155,7 +155,7 @@ export default function JustificativosView({
                 value={fechaFin}
                 onChange={(e) => setFechaFin(e.target.value)}
                 required
-                className="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function JustificativosView({
             <select
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {MOTIVOS_FRECUENTES.map((m) => (
                 <option key={m} value={m}>
@@ -177,14 +177,14 @@ export default function JustificativosView({
 
           <div>
             <label className="block font-semibold text-slate-600 mb-1">
-              Observaciones / N° de Certificado Médico
+              Observaciones / N° Certificado Médico
             </label>
             <textarea
               rows={2}
-              placeholder="Ej: Constancia del Ambulatorio Guarenas, reposo por 48 horas..."
+              placeholder="Ej: Constancia médica, reposo por 48 horas..."
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -200,11 +200,11 @@ export default function JustificativosView({
 
       {/* Columna Derecha: Historial de Justificativos */}
       <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900">
-            Historial de Justificativos Registrados ({historialJustificativos.length})
+        <div className="p-3.5 sm:p-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="text-xs sm:text-base font-bold text-slate-900">
+            Historial de Justificativos ({historialJustificativos.length})
           </h2>
-          <span className="text-xs text-slate-400">Actualización en tiempo real</span>
+          <span className="text-[11px] sm:text-xs text-slate-400">Actualización en tiempo real</span>
         </div>
 
         <div className="divide-y divide-slate-100 text-xs">
@@ -214,24 +214,24 @@ export default function JustificativosView({
             </div>
           ) : (
             historialJustificativos.map((item) => (
-              <div key={item.id} className="p-4 hover:bg-slate-50 transition space-y-1">
-                <div className="flex items-center justify-between">
+              <div key={item.id} className="p-3.5 sm:p-4 hover:bg-slate-50 transition space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <span className="font-bold text-slate-900 text-sm">
                     {item.estudiantes.apellidos}, {item.estudiantes.nombres}
                   </span>
-                  <span className="font-mono text-[11px] bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full font-bold">
+                  <span className="self-start sm:self-auto font-mono text-[10px] sm:text-[11px] bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full font-bold">
                     {item.fecha_inicio} al {item.fecha_fin}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 text-slate-500 font-mono text-[11px]">
+                <div className="flex flex-wrap items-center gap-1.5 text-slate-500 font-mono text-[11px]">
                   <span>C.E: {item.estudiantes.cedula_escolar}</span>
                   <span>•</span>
                   <span className="font-semibold text-slate-700">{item.motivo}</span>
                 </div>
 
                 {item.observaciones && (
-                  <p className="text-slate-600 italic bg-slate-50 p-2 rounded-lg border border-slate-100 mt-1">
+                  <p className="text-slate-600 italic bg-slate-50 p-2 rounded-xl border border-slate-100 mt-1">
                     "{item.observaciones}"
                   </p>
                 )}

@@ -104,8 +104,8 @@ export default async function AdminPage() {
   const perfiles: PerfilAdmin[] = (perfilesData as unknown as PerfilAdmin[]) || []
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6 md:p-10">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <main className="min-h-screen bg-slate-100 p-3 sm:p-6 md:p-10">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         {/* Barra de navegación unificada */}
         <Navbar perfil={perfil} />
 

@@ -114,12 +114,12 @@ function SelectorSeccionDocente({
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 w-full sm:w-auto">
       <select
         value={seccionId}
         disabled={cargando || perfil.activo === false}
         onChange={handleCambio}
-        className="text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+        className="w-full sm:w-auto text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
       >
         <option value="">-- Sin Aula Asignada --</option>
         {secciones.map((sec) => {
@@ -139,7 +139,7 @@ function SelectorSeccionDocente({
           )
         })}
       </select>
-      {cargando && <span className="text-[10px] text-blue-600 font-bold animate-pulse">Guardando...</span>}
+      {cargando && <span className="text-[10px] text-blue-600 font-bold animate-pulse shrink-0">Guardando...</span>}
     </div>
   )
 }
@@ -211,7 +211,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
     setTimeout(() => setMensaje(null), 4000)
   }
 
-  // Mapa de secciones ya asignadas a algún docente titular
+  // Mapa de secciones asignadas a titulares activos
   const docentesPorSeccion = perfiles.reduce((acc, p) => {
     if (p.rol === 'DOCENTE' && p.seccion_id && p.activo !== false) {
       acc[p.seccion_id] = `${p.nombres} ${p.apellidos}`
@@ -566,10 +566,10 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {mensaje && (
         <div
-          className={`p-4 rounded-xl text-sm font-medium ${
+          className={`p-3.5 sm:p-4 rounded-xl text-xs sm:text-sm font-medium ${
             mensaje.tipo === 'ok'
               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
               : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -579,11 +579,11 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
         </div>
       )}
 
-      {/* Selector de Pestañas */}
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      {/* Selector de Pestañas con Scroll Horizontal Táctil */}
+      <div className="flex items-center gap-1 sm:gap-2 border-b border-slate-200 overflow-x-auto pb-px">
         <button
           onClick={() => setTab('estudiantes')}
-          className={`px-4 py-2.5 text-sm font-semibold transition border-b-2 cursor-pointer ${
+          className={`px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap shrink-0 cursor-pointer ${
             tab === 'estudiantes'
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -593,43 +593,43 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
         </button>
         <button
           onClick={() => setTab('secciones')}
-          className={`px-4 py-2.5 text-sm font-semibold transition border-b-2 cursor-pointer ${
+          className={`px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap shrink-0 cursor-pointer ${
             tab === 'secciones'
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          🏫 Aulas (Grados y Años) ({secciones.length})
+          🏫 Aulas ({secciones.length})
         </button>
         <button
           onClick={() => setTab('personal')}
-          className={`px-4 py-2.5 text-sm font-semibold transition border-b-2 cursor-pointer ${
+          className={`px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap shrink-0 cursor-pointer ${
             tab === 'personal'
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          👨‍🏫 Personal y Docentes ({perfiles.length})
+          👨‍🏫 Personal ({perfiles.length})
         </button>
       </div>
 
       {/* PESTAÑA 1: ESTUDIANTES */}
       {tab === 'estudiantes' && (
         <div className="space-y-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full md:w-auto">
               <input
                 type="text"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar por cédula, nombre o apellido..."
-                className="w-72 border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Buscar cédula o nombre..."
+                className="w-full sm:w-64 border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
 
               <select
                 value={filtroSeccion}
                 onChange={(e) => setFiltroSeccion(e.target.value)}
-                className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full sm:w-56 border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="TODAS">Todas las aulas</option>
                 {secciones.map((sec) => (
@@ -640,11 +640,11 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
               <button
                 type="button"
                 onClick={() => setMostrarModalImportacion(true)}
-                className="px-3.5 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-xs font-semibold rounded-xl shadow-2xs transition flex items-center gap-1.5 cursor-pointer"
+                className="w-full sm:w-auto px-3.5 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-xs font-semibold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>📥</span>
                 <span>Importar CSV</span>
@@ -656,15 +656,73 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                   setErrorModalEstudiante(null)
                   setMostrarModalEstudiante(true)
                 }}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>+</span>
-                <span>Inscribir Estudiante</span>
+                <span>Inscribir</span>
               </button>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          {/* VISTA MÓVIL: Tarjetas de Estudiantes (< md) */}
+          <div className="grid grid-cols-1 gap-3 md:hidden">
+            {estudiantesFiltrados.length === 0 ? (
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 text-center text-slate-400 text-xs">
+                No se encontraron estudiantes registrados.
+              </div>
+            ) : (
+              estudiantesFiltrados.map((est) => (
+                <div key={est.id} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-bold text-slate-900 leading-snug">
+                        {est.apellidos}, {est.nombres}
+                      </p>
+                      <span className="font-mono text-xs text-slate-500 font-semibold">{est.cedula_escolar}</span>
+                    </div>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                        est.activo
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-slate-100 text-slate-500 border border-slate-300'
+                      }`}
+                    >
+                      {est.activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-slate-600 space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <p>
+                      <strong className="text-slate-700">Aula:</strong>{' '}
+                      {est.secciones
+                        ? formatearNivelEducativo(est.secciones.grado, est.secciones.seccion, est.secciones.nivel)
+                        : 'Sin aula asignada'}
+                    </p>
+                    <p>
+                      <strong className="text-slate-700">Representante:</strong> {est.nombre_representante || 'No registrado'}
+                      {est.telefono_representante ? ` (${est.telefono_representante})` : ''}
+                    </p>
+                  </div>
+
+                  <div className="pt-1 flex justify-end">
+                    <button
+                      onClick={() => handleToggleEstado(est.id, est.activo)}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition ${
+                        est.activo
+                          ? 'text-rose-700 bg-rose-50 border-rose-200'
+                          : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      }`}
+                    >
+                      {est.activo ? 'Desactivar estudiante' : 'Reactivar estudiante'}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* VISTA ESCRITORIO: Tabla tradicional (md en adelante) */}
+          <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -687,12 +745,8 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                   ) : (
                     estudiantesFiltrados.map((est) => (
                       <tr key={est.id} className="hover:bg-slate-50/60 transition">
-                        <td className="py-3 px-4 font-mono text-xs text-slate-600">
-                          {est.cedula_escolar}
-                        </td>
-                        <td className="py-3 px-4 font-medium text-slate-900">
-                          {est.apellidos}, {est.nombres}
-                        </td>
+                        <td className="py-3 px-4 font-mono text-xs text-slate-600">{est.cedula_escolar}</td>
+                        <td className="py-3 px-4 font-medium text-slate-900">{est.apellidos}, {est.nombres}</td>
                         <td className="py-3 px-4 text-xs text-slate-600">
                           <p className="font-semibold text-slate-700">{est.nombre_representante || 'No registrado'}</p>
                           {est.telefono_representante && (
@@ -719,9 +773,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                           <button
                             onClick={() => handleToggleEstado(est.id, est.activo)}
                             className={`text-xs font-semibold cursor-pointer transition ${
-                              est.activo
-                                ? 'text-rose-600 hover:text-rose-800'
-                                : 'text-emerald-600 hover:text-emerald-800'
+                              est.activo ? 'text-rose-600 hover:text-rose-800' : 'text-emerald-600 hover:text-emerald-800'
                             }`}
                           >
                             {est.activo ? 'Desactivar' : 'Reactivar'}
@@ -740,8 +792,8 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
       {/* PESTAÑA 2: SECCIONES / GRADOS / AÑOS */}
       {tab === 'secciones' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <h3 className="text-base font-bold text-slate-900 mb-1">Aperturar Nueva Aula</h3>
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 mb-1">Aperturar Nueva Aula</h3>
             <p className="text-xs text-slate-500 mb-4">Configura grados de primaria o años para liceo.</p>
 
             <form onSubmit={handleCrearSeccion} className="space-y-4">
@@ -756,7 +808,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                       setNivelEducativo('PRIMARIA')
                       setNuevoGrado(1)
                     }}
-                    className={`py-2 text-xs font-semibold rounded-lg border transition cursor-pointer ${
+                    className={`py-2 text-xs font-semibold rounded-xl border transition cursor-pointer ${
                       nivelEducativo === 'PRIMARIA'
                         ? 'bg-blue-50 border-blue-600 text-blue-700'
                         : 'border-slate-300 text-slate-600 hover:bg-slate-50'
@@ -770,7 +822,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                       setNivelEducativo('MEDIA_GENERAL')
                       setNuevoGrado(1)
                     }}
-                    className={`py-2 text-xs font-semibold rounded-lg border transition cursor-pointer ${
+                    className={`py-2 text-xs font-semibold rounded-xl border transition cursor-pointer ${
                       nivelEducativo === 'MEDIA_GENERAL'
                         ? 'bg-blue-50 border-blue-600 text-blue-700'
                         : 'border-slate-300 text-slate-600 hover:bg-slate-50'
@@ -788,18 +840,14 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                 <select
                   value={nuevoGrado}
                   onChange={(e) => setNuevoGrado(Number(e.target.value))}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {nivelEducativo === 'PRIMARIA'
                     ? [1, 2, 3, 4, 5, 6].map((g) => (
-                        <option key={g} value={g}>
-                          {g}° Grado
-                        </option>
+                        <option key={g} value={g}>{g}° Grado</option>
                       ))
                     : [1, 2, 3, 4, 5].map((g) => (
-                        <option key={g} value={g}>
-                          {g}° Año
-                        </option>
+                        <option key={g} value={g}>{g}° Año</option>
                       ))}
                 </select>
               </div>
@@ -816,70 +864,108 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                   onKeyDown={bloquearEspacio}
                   onChange={(e) => setNuevaLetraSeccion(filtrarSoloLetras(e.target.value).toUpperCase())}
                   required
-                  className="w-full uppercase border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full uppercase border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={guardandoSeccion}
-                className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold text-xs rounded-xl shadow-sm transition cursor-pointer"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold text-xs rounded-xl shadow-sm transition cursor-pointer"
               >
-                {guardandoSeccion
-                  ? 'Guardando...'
-                  : `Crear ${nivelEducativo === 'PRIMARIA' ? 'Grado' : 'Año'}`}
+                {guardandoSeccion ? 'Guardando...' : `Crear ${nivelEducativo === 'PRIMARIA' ? 'Grado' : 'Año'}`}
               </button>
             </form>
           </div>
 
-          <div className="md:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-900">Aulas Activas del Plantel</h3>
-              <span className="text-xs text-slate-500">Primaria y Media General</span>
+          {/* Lista de Aulas: Tarjetas en móvil (< md) y Tabla en escritorio (md+) */}
+          <div className="md:col-span-2 space-y-3">
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900">Aulas Activas del Plantel</h3>
+              <span className="text-xs text-slate-500">{secciones.length} creadas</span>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
-                    <th className="py-3 px-4">Grado / Año</th>
-                    <th className="py-3 px-4">Sección</th>
-                    <th className="py-3 px-4">Docente Titular Asignado</th>
-                    <th className="py-3 px-4">Estudiantes Inscritos</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-sm">
-                  {secciones.map((sec) => {
-                    const totalEstudiantes = estudiantes.filter(
-                      (e) => Number(e.seccion_actual_id) === Number(sec.id) && e.activo
-                    ).length
-                    const docenteTitular = docentesPorSeccion[Number(sec.id)]
 
-                    return (
-                      <tr key={sec.id} className="hover:bg-slate-50/60 transition">
-                        <td className="py-3 px-4 font-semibold text-slate-800">
-                          {formatearNivelEducativo(sec.grado, sec.seccion, sec.nivel).split('"')[0]}
-                        </td>
-                        <td className="py-3 px-4 font-bold text-blue-700">
-                          Sección "{sec.seccion}"
-                        </td>
-                        <td className="py-3 px-4 text-xs">
-                          {docenteTitular ? (
-                            <span className="font-semibold text-slate-800 flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-                              {docenteTitular}
-                            </span>
-                          ) : (
-                            <span className="text-amber-600 italic font-medium">Disponible (Sin docente)</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-xs font-medium text-slate-500">
-                          {totalEstudiantes} estudiantes activos
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+            {/* Móvil */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:hidden">
+              {secciones.map((sec) => {
+                const totalEstudiantes = estudiantes.filter(
+                  (e) => Number(e.seccion_actual_id) === Number(sec.id) && e.activo
+                ).length
+                const docenteTitular = docentesPorSeccion[Number(sec.id)]
+
+                return (
+                  <div key={sec.id} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-slate-900">
+                        {formatearNivelEducativo(sec.grado, sec.seccion, sec.nivel).split('"')[0]}
+                      </span>
+                      <span className="text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100">
+                        Sección "{sec.seccion}"
+                      </span>
+                    </div>
+
+                    <div className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1">
+                      <p>
+                        <strong className="text-slate-700">Docente:</strong>{' '}
+                        {docenteTitular ? (
+                          <span className="font-semibold text-slate-800">{docenteTitular}</span>
+                        ) : (
+                          <span className="text-amber-600 italic">Disponible (Sin asignar)</span>
+                        )}
+                      </p>
+                      <p>
+                        <strong className="text-slate-700">Estudiantes:</strong> {totalEstudiantes} activos
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Escritorio */}
+            <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                      <th className="py-3 px-4">Grado / Año</th>
+                      <th className="py-3 px-4">Sección</th>
+                      <th className="py-3 px-4">Docente Titular</th>
+                      <th className="py-3 px-4">Estudiantes</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm">
+                    {secciones.map((sec) => {
+                      const totalEstudiantes = estudiantes.filter(
+                        (e) => Number(e.seccion_actual_id) === Number(sec.id) && e.activo
+                      ).length
+                      const docenteTitular = docentesPorSeccion[Number(sec.id)]
+
+                      return (
+                        <tr key={sec.id} className="hover:bg-slate-50/60 transition">
+                          <td className="py-3 px-4 font-semibold text-slate-800">
+                            {formatearNivelEducativo(sec.grado, sec.seccion, sec.nivel).split('"')[0]}
+                          </td>
+                          <td className="py-3 px-4 font-bold text-blue-700">Sección "{sec.seccion}"</td>
+                          <td className="py-3 px-4 text-xs">
+                            {docenteTitular ? (
+                              <span className="font-semibold text-slate-800 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                                {docenteTitular}
+                              </span>
+                            ) : (
+                              <span className="text-amber-600 italic font-medium">Disponible (Sin docente)</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-xs font-medium text-slate-500">
+                            {totalEstudiantes} estudiantes activos
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -888,9 +974,9 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
       {/* PESTAÑA 3: PERSONAL Y DOCENTES */}
       {tab === 'personal' && (
         <div className="space-y-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Nómina de Docentes, Directivos y Personal de Control de Estudios
+              Nómina de Personal Institucional
             </p>
             <button
               onClick={() => {
@@ -901,14 +987,116 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                 setConfirmPasswordPersonal('')
                 setMostrarModalPersonal(true)
               }}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>+</span>
-              <span>Registrar Personal / Docente</span>
+              <span>Registrar Personal</span>
             </button>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          {/* Móvil: Tarjetas de Personal (< md) */}
+          <div className="grid grid-cols-1 gap-3 md:hidden">
+            {perfiles.map((p) => {
+              const estaActivo = p.activo !== false
+              return (
+                <div
+                  key={p.id}
+                  className={`bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 ${
+                    !estaActivo ? 'opacity-60 bg-slate-50/40' : ''
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-bold text-slate-900 leading-snug">
+                        {p.nombres} {p.apellidos}
+                      </p>
+                      <span className="font-mono text-xs text-slate-500 font-semibold">{p.cedula || 'Sin CI'}</span>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          ['ADMIN', 'ADMINISTRATIVO'].includes(p.rol as string)
+                            ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                            : ['DIRECTOR', 'DIRECTIVO'].includes(p.rol as string)
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                            : (p.rol as string) === 'SUBDIRECTOR'
+                            ? 'bg-cyan-50 text-cyan-700 border border-cyan-200'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}
+                      >
+                        {p.rol}
+                      </span>
+                      <span
+                        className={`text-[9px] font-bold px-1.5 py-0.2 rounded-md ${
+                          estaActivo ? 'text-emerald-700 bg-emerald-50' : 'text-slate-500 bg-slate-100'
+                        }`}
+                      >
+                        {estaActivo ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Asignación en móvil */}
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs">
+                    <span className="block font-semibold text-slate-700 mb-1">Aula / Asignación:</span>
+                    {p.rol === 'DOCENTE' ? (
+                      <SelectorSeccionDocente
+                        perfil={p}
+                        secciones={secciones}
+                        docentesPorSeccion={docentesPorSeccion}
+                        onActualizado={mostrarNotificacion}
+                      />
+                    ) : (
+                      <span className="text-slate-400 italic">Supervisión Institucional</span>
+                    )}
+                  </div>
+
+                  {/* Barra de Acciones Móvil */}
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => abrirEdicionPersonal(p)}
+                      className="px-2.5 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg transition"
+                    >
+                      ✏️ Editar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPersonalAResetear(p)
+                        setNuevaClaveAdmin('')
+                        setErrorReset(null)
+                      }}
+                      className="px-2.5 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg transition"
+                    >
+                      🔑 Clave
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleEstadoPersonal(p)}
+                      className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition ${
+                        estaActivo
+                          ? 'text-amber-700 bg-amber-50 border-amber-200'
+                          : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      }`}
+                    >
+                      {estaActivo ? '🚫 Baja' : '🔄 Alta'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleEliminarDefinitivo(p)}
+                      className="px-2.5 py-1.5 text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg transition"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Escritorio: Tabla tradicional (md+) */}
+          <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -926,12 +1114,8 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     const estaActivo = p.activo !== false
                     return (
                       <tr key={p.id} className={`hover:bg-slate-50/60 transition ${!estaActivo ? 'opacity-60 bg-slate-50/30' : ''}`}>
-                        <td className="py-3 px-4 font-mono text-xs text-slate-600">
-                          {p.cedula || 'N/A'}
-                        </td>
-                        <td className="py-3 px-4 font-medium text-slate-900">
-                          {p.nombres} {p.apellidos}
-                        </td>
+                        <td className="py-3 px-4 font-mono text-xs text-slate-600">{p.cedula || 'N/A'}</td>
+                        <td className="py-3 px-4 font-medium text-slate-900">{p.nombres} {p.apellidos}</td>
                         <td className="py-3 px-4">
                           <span
                             className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${
@@ -1026,29 +1210,29 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
 
       {/* MODAL PARA EDITAR PERSONAL */}
       {personalAEditar && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-xl space-y-4 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900">Editar Personal Institucional</h3>
+              <h3 className="text-sm sm:text-base font-bold text-slate-900">Editar Personal Institucional</h3>
               <button
                 type="button"
                 onClick={() => setPersonalAEditar(null)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 font-bold p-1"
               >
                 ✕
               </button>
             </div>
 
             {errorEdicion && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2">
                 <span>⚠️</span>
                 <span>{errorEdicion}</span>
               </div>
             )}
 
             <form onSubmit={handleGuardarEdicionPersonal} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
                   <span className="text-xs text-slate-400 block font-mono">
                     Cédula: {personalAEditar.cedula || 'No registrada'}
                   </span>
@@ -1063,7 +1247,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     required
                     value={editNombres}
                     onChange={(e) => setEditNombres(filtrarSoloLetras(e.target.value))}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
@@ -1076,11 +1260,11 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     required
                     value={editApellidos}
                     onChange={(e) => setEditApellidos(filtrarSoloLetras(e.target.value))}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                     Rol Institucional *
                   </label>
@@ -1090,7 +1274,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                       setEditRol(e.target.value as RolUsuario)
                       setErrorEdicion(null)
                     }}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="DOCENTE">DOCENTE (Toma asistencia en su aula)</option>
                     <option value="SUBDIRECTOR">SUBDIRECTOR (Supervisión institucional)</option>
@@ -1101,7 +1285,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                 </div>
 
                 {editRol === 'DOCENTE' && (
-                  <div className="col-span-2 bg-blue-50/60 p-3.5 rounded-xl border border-blue-200 space-y-1.5">
+                  <div className="sm:col-span-2 bg-blue-50/60 p-3 rounded-xl border border-blue-200 space-y-1.5">
                     <label className="block text-xs font-bold text-blue-900 uppercase tracking-wider">
                       Aula Asignada *
                     </label>
@@ -1109,7 +1293,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                       value={editSeccionId}
                       onChange={(e) => setEditSeccionId(e.target.value ? Number(e.target.value) : '')}
                       required
-                      className="w-full border border-blue-300 bg-white rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-blue-300 bg-white rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">-- Seleccionar Aula --</option>
                       {secciones.map((sec) => {
@@ -1155,14 +1339,14 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
 
       {/* MODAL PARA RESTABLECER CONTRASEÑA */}
       {personalAResetear && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5 sm:p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900">Restablecer Clave</h3>
+              <h3 className="text-sm sm:text-base font-bold text-slate-900">Restablecer Clave</h3>
               <button
                 type="button"
                 onClick={() => setPersonalAResetear(null)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 font-bold p-1"
               >
                 ✕
               </button>
@@ -1173,11 +1357,11 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
               <strong className="text-slate-800">
                 {personalAResetear.nombres} {personalAResetear.apellidos}
               </strong>
-              . Podrá cambiarla luego desde su perfil.
+              .
             </p>
 
             {errorReset && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2">
                 <span>⚠️</span>
                 <span>{errorReset}</span>
               </div>
@@ -1186,7 +1370,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
             <form onSubmit={handleGuardarResetClave} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                  Nueva Contraseña Temporal *
+                  Nueva Contraseña *
                 </label>
                 <input
                   type="password"
@@ -1195,7 +1379,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                   placeholder="Mínimo 6 caracteres"
                   value={nuevaClaveAdmin}
                   onChange={(e) => setNuevaClaveAdmin(e.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -1222,29 +1406,29 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
 
       {/* MODAL PARA INSCRIBIR ESTUDIANTE INDIVIDUAL */}
       {mostrarModalEstudiante && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-xl space-y-4 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900">Inscribir Estudiante</h3>
+              <h3 className="text-sm sm:text-base font-bold text-slate-900">Inscribir Estudiante</h3>
               <button
                 type="button"
                 onClick={() => setMostrarModalEstudiante(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 font-bold p-1"
               >
                 ✕
               </button>
             </div>
 
             {errorModalEstudiante && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2">
                 <span>⚠️</span>
                 <span>{errorModalEstudiante}</span>
               </div>
             )}
 
             <form onSubmit={handleCrearEstudiante} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                     Cédula Escolar / Identidad *
                   </label>
@@ -1256,7 +1440,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     value={nuevoCedula}
                     onKeyDown={bloquearEspacio}
                     onChange={(e) => manejarCambioCedula(e.target.value)}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
@@ -1270,7 +1454,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     placeholder="Ej: Alejandro José"
                     value={nuevoNombres}
                     onChange={(e) => setNuevoNombres(filtrarSoloLetras(e.target.value))}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
@@ -1284,7 +1468,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     placeholder="Ej: Gómez Pérez"
                     value={nuevoApellidos}
                     onChange={(e) => setNuevoApellidos(filtrarSoloLetras(e.target.value))}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
@@ -1295,7 +1479,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                   <select
                     value={nuevoGenero}
                     onChange={(e) => setNuevoGenero(e.target.value as 'M' | 'F')}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="M">Masculino</option>
                     <option value="F">Femenino</option>
@@ -1311,11 +1495,11 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     required
                     value={nuevoFechaNac}
                     onChange={(e) => setNuevoFechaNac(e.target.value)}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                     Aula Asignada (Grado o Año) *
                   </label>
@@ -1323,7 +1507,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     value={nuevoSeccionId}
                     onChange={(e) => setNuevoSeccionId(Number(e.target.value))}
                     required
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {secciones.map((sec) => (
                       <option key={sec.id} value={sec.id}>
@@ -1333,13 +1517,13 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                   </select>
                 </div>
 
-                <div className="col-span-2 pt-3 border-t border-slate-200">
-                  <p className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-2">
+                <div className="sm:col-span-2 pt-2 border-t border-slate-200">
+                  <p className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-1">
                     Datos del Representante Legal
                   </p>
                 </div>
 
-                <div className="col-span-2 sm:col-span-1">
+                <div>
                   <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
                     Nombre del Representante *
                   </label>
@@ -1349,11 +1533,11 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     placeholder="Ej: Carmen Gómez"
                     value={nuevoRepresentante}
                     onChange={(e) => setNuevoRepresentante(filtrarSoloLetras(e.target.value))}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
-                <div className="col-span-2 sm:col-span-1">
+                <div>
                   <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
                     Teléfono de Contacto *
                   </label>
@@ -1365,7 +1549,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     value={nuevoTelefonoRep}
                     onKeyDown={bloquearEspacio}
                     onChange={(e) => setNuevoTelefonoRep(filtrarSoloNumeros(e.target.value))}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -1404,29 +1588,29 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
 
       {/* MODAL PARA REGISTRAR PERSONAL / DOCENTE */}
       {mostrarModalPersonal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-xl space-y-4 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900">Registrar Personal / Docente</h3>
+              <h3 className="text-sm sm:text-base font-bold text-slate-900">Registrar Personal / Docente</h3>
               <button
                 type="button"
                 onClick={() => setMostrarModalPersonal(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 font-bold p-1"
               >
                 ✕
               </button>
             </div>
 
             {errorModalPersonal && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2">
                 <span>⚠️</span>
                 <span>{errorModalPersonal}</span>
               </div>
             )}
 
             <form onSubmit={handleCrearPersonal} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                     Cédula de Identidad *
                   </label>
@@ -1438,11 +1622,11 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     value={cedulaPersonal}
                     onKeyDown={bloquearEspacio}
                     onChange={(e) => manejarCambioCedulaPersonal(e.target.value)}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                     Correo Electrónico (Acceso al sistema) *
                   </label>
@@ -1453,11 +1637,11 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     value={emailPersonal}
                     onKeyDown={bloquearEspacio}
                     onChange={(e) => setEmailPersonal(e.target.value)}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
-                <div className="col-span-2 sm:col-span-1">
+                <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                     Contraseña Inicial *
                   </label>
@@ -1469,11 +1653,11 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     value={passwordPersonal}
                     onKeyDown={bloquearEspacio}
                     onChange={(e) => setPasswordPersonal(e.target.value)}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
-                <div className="col-span-2 sm:col-span-1">
+                <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                     Confirmar Contraseña *
                   </label>
@@ -1485,7 +1669,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     value={confirmPasswordPersonal}
                     onKeyDown={bloquearEspacio}
                     onChange={(e) => setConfirmPasswordPersonal(e.target.value)}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
@@ -1498,7 +1682,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     required
                     value={nombresPersonal}
                     onChange={(e) => setNombresPersonal(filtrarSoloLetras(e.target.value))}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
@@ -1511,11 +1695,11 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     required
                     value={apellidosPersonal}
                     onChange={(e) => setApellidosPersonal(filtrarSoloLetras(e.target.value))}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                     Rol Institucional *
                   </label>
@@ -1526,7 +1710,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                       setRolPersonal(nuevoRol)
                       setErrorModalPersonal(null)
                     }}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="DOCENTE">DOCENTE (Toma asistencia en su aula)</option>
                     <option value="SUBDIRECTOR">SUBDIRECTOR (Supervisión institucional única)</option>
@@ -1537,7 +1721,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                 </div>
 
                 {rolPersonal === 'DOCENTE' && (
-                  <div className="col-span-2 bg-blue-50/60 p-3.5 rounded-xl border border-blue-200 space-y-1.5">
+                  <div className="sm:col-span-2 bg-blue-50/60 p-3 rounded-xl border border-blue-200 space-y-1.5">
                     <label className="block text-xs font-bold text-blue-900 uppercase tracking-wider">
                       Aula Asignada para Asistencias *
                     </label>
@@ -1548,7 +1732,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                         setErrorModalPersonal(null)
                       }}
                       required
-                      className="w-full border border-blue-300 bg-white rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-blue-300 bg-white rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">-- Seleccionar Aula --</option>
                       {secciones.map((sec) => {
@@ -1567,7 +1751,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                       })}
                     </select>
                     <p className="text-[11px] text-blue-700">
-                      Las aulas ya asignadas a otro docente titular se muestran deshabilitadas para garantizar la exclusividad.
+                      Las aulas ya asignadas se muestran deshabilitadas para garantizar exclusividad docente.
                     </p>
                   </div>
                 )}

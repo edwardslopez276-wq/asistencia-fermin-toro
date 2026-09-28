@@ -102,7 +102,6 @@ export default function ImportarEstudiantesModal({ secciones, onClose, onSuccess
         for (let i = 0; i < filas.length; i++) {
           const f = filas[i]
 
-          // Soporte flexible de cabeceras en mayúsculas o minúsculas
           const cedula = f.cedula_escolar || f.cedula || f.CEDULA || f.Cedula
           const nombres = f.nombres || f.nombre || f.NOMBRES || f.Nombres
           const apellidos = f.apellidos || f.apellido || f.APELLIDOS || f.Apellidos
@@ -124,7 +123,7 @@ export default function ImportarEstudiantesModal({ secciones, onClose, onSuccess
         }
 
         if (validos.length === 0) {
-          setErrorMsg('El archivo no contiene filas válidas o faltan las columnas obligatorias (cedula_escolar, nombres, apellidos).')
+          setErrorMsg('El archivo no contiene filas válidas o faltan columnas obligatorias (cedula_escolar, nombres, apellidos).')
           setDatosParseados([])
         } else {
           setDatosParseados(validos)
@@ -170,21 +169,22 @@ export default function ImportarEstudiantesModal({ secciones, onClose, onSuccess
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl space-y-5 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-xl space-y-4 sm:space-y-5 max-h-[92vh] overflow-y-auto">
+        {/* Cabecera del Modal */}
+        <div className="flex items-start justify-between border-b border-slate-100 pb-3 gap-2">
           <div>
-            <h3 className="text-base font-bold text-slate-900">
-              📥 Importación Masiva de Nómina Escolar
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+              📥 Importación Masiva de Nómina
             </h3>
-            <p className="text-xs text-slate-500">
-              Carga alumnos por lote a través de una plantilla de archivo CSV o Excel.
+            <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+              Carga alumnos por lote a través de una plantilla delimitada por comas (CSV).
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer"
+            className="text-slate-400 hover:text-slate-600 font-bold text-lg p-1"
           >
             ✕
           </button>
@@ -196,16 +196,16 @@ export default function ImportarEstudiantesModal({ secciones, onClose, onSuccess
           </div>
         )}
 
-        {/* Sección de Descarga de Plantilla y Configuración */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+        {/* Sección de Selección de Aula y Descarga de Plantilla */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200">
           <div>
-            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
-              1. Asignar a la Sección:
+            <label className="block text-[11px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
+              1. Aula de Destino:
             </label>
             <select
               value={seccionId}
               onChange={(e) => setSeccionId(Number(e.target.value))}
-              className="w-full border border-slate-300 bg-white rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-300 bg-white rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {secciones.map((sec) => (
                 <option key={sec.id} value={sec.id}>
@@ -219,7 +219,7 @@ export default function ImportarEstudiantesModal({ secciones, onClose, onSuccess
             <button
               type="button"
               onClick={descargarPlantilla}
-              className="w-full py-2 px-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold rounded-lg shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-2 px-3 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5"
             >
               <span>📄</span>
               <span>Descargar Plantilla CSV</span>
@@ -227,18 +227,18 @@ export default function ImportarEstudiantesModal({ secciones, onClose, onSuccess
           </div>
         </div>
 
-        {/* Carga del archivo */}
+        {/* Selector de Archivo CSV */}
         <div>
-          <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+          <label className="block text-[11px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
             2. Seleccionar archivo CSV con la nómina:
           </label>
-          <label className="border-2 border-dashed border-slate-300 hover:border-blue-500 bg-white rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition">
-            <span className="text-3xl mb-1">📂</span>
-            <span className="text-xs font-semibold text-slate-700">
-              {nombreArchivo || 'Haz clic para seleccionar el archivo CSV'}
+          <label className="border-2 border-dashed border-slate-300 hover:border-blue-500 bg-white rounded-xl p-5 sm:p-6 flex flex-col items-center justify-center cursor-pointer transition">
+            <span className="text-2xl sm:text-3xl mb-1">📂</span>
+            <span className="text-xs font-semibold text-slate-700 text-center break-all px-2">
+              {nombreArchivo || 'Toca para seleccionar el archivo CSV'}
             </span>
-            <span className="text-[11px] text-slate-400 mt-0.5">
-              Formato delimitado por comas (.csv)
+            <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">
+              Archivo con extensión .csv
             </span>
             <input
               type="file"
@@ -254,12 +254,31 @@ export default function ImportarEstudiantesModal({ secciones, onClose, onSuccess
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold text-slate-700">
-                Vista previa de alumnos detectados ({datosParseados.length}):
+                Alumnos detectados ({datosParseados.length}):
               </span>
-              <span className="text-emerald-600 font-bold">✓ Formato verificado</span>
+              <span className="text-emerald-600 font-bold text-[11px]">✓ Formato correcto</span>
             </div>
 
-            <div className="max-h-44 overflow-y-auto border border-slate-200 rounded-xl overflow-hidden">
+            {/* Vista previa en móvil: Tarjetas (< sm) */}
+            <div className="sm:hidden max-h-48 overflow-y-auto space-y-2 border border-slate-200 rounded-xl p-2 bg-slate-50/50">
+              {datosParseados.slice(0, 8).map((d, idx) => (
+                <div key={idx} className="bg-white p-2.5 rounded-lg border border-slate-200 text-xs space-y-0.5">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-slate-900">{d.apellidos}, {d.nombres}</span>
+                    <span className="font-mono text-[10px] bg-slate-100 px-1.5 py-0.2 rounded font-semibold text-slate-600">
+                      {d.cedula_escolar}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-[11px] text-slate-500">
+                    <span>Rep: {d.nombre_representante}</span>
+                    <span className="font-bold text-slate-700">{d.genero}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Vista previa en tablets/escritorio: Tabla (sm+) */}
+            <div className="hidden sm:block max-h-44 overflow-y-auto border border-slate-200 rounded-xl overflow-hidden">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-100 text-slate-600 uppercase font-semibold">
@@ -283,20 +302,21 @@ export default function ImportarEstudiantesModal({ secciones, onClose, onSuccess
                 </tbody>
               </table>
             </div>
-            {datosParseados.length > 10 && (
-              <p className="text-[11px] text-slate-400 text-center italic">
-                ...y {datosParseados.length - 10} alumnos más listos para cargar.
+
+            {datosParseados.length > 8 && (
+              <p className="text-[10px] sm:text-[11px] text-slate-400 text-center italic">
+                ...y {datosParseados.length - 8} alumnos adicionales listos para procesar.
               </p>
             )}
           </div>
         )}
 
         {/* Botones de acción */}
-        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+        <div className="grid grid-cols-2 sm:flex sm:justify-end gap-2 pt-3 border-t border-slate-100">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition text-center"
           >
             Cancelar
           </button>
@@ -304,9 +324,9 @@ export default function ImportarEstudiantesModal({ secciones, onClose, onSuccess
             type="button"
             disabled={procesando || datosParseados.length === 0}
             onClick={handleGuardar}
-            className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-semibold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-semibold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-1.5 disabled:cursor-not-allowed"
           >
-            {procesando ? 'Guardando nómina...' : `Importar ${datosParseados.length} Alumnos`}
+            {procesando ? 'Guardando nómina...' : `Importar (${datosParseados.length})`}
           </button>
         </div>
       </div>

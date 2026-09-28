@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import JustificativosView from '@/components/JustificativosView'
 import Navbar from '@/components/Navbar'
 
@@ -23,11 +24,15 @@ export default async function JustificativosPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
+  if (!user) {
+    redirect('/login')
+  }
+
   // Perfil del usuario
   const { data: perfil } = await supabase
     .from('perfiles')
     .select('nombres, apellidos, rol, seccion_id')
-    .eq('id', user?.id)
+    .eq('id', user.id)
     .single()
 
   const esDocente = perfil?.rol === 'DOCENTE'
@@ -67,16 +72,16 @@ export default async function JustificativosPage() {
     .limit(50)
 
   // Si es docente, filtramos solo los de su sección
-  const historialFiltrado = esDocente && perfil?.seccion_id
-    ? (justificativosData || []).filter(
-        // @ts-expect-error supabase type inference
-        (j) => j.estudiantes?.seccion_actual_id === perfil.seccion_id
-      )
-    : justificativosData || []
+  const historialFiltrado =
+    esDocente && perfil?.seccion_id
+      ? (justificativosData || []).filter(
+          (j: any) => j.estudiantes?.seccion_actual_id === perfil.seccion_id
+        )
+      : justificativosData || []
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6 md:p-10">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <main className="min-h-screen bg-slate-100 p-3 sm:p-6 md:p-10">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         {/* Barra de navegación unificada */}
         <Navbar perfil={perfil} />
 
