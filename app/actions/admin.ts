@@ -519,3 +519,35 @@ export async function alternarEstadoPersonal(usuarioId: string, nuevoEstado: boo
     return { ok: false, error: err.message || 'Error al alternar estado del usuario.' }
   }
 }
+// 9. Eliminación definitiva de un usuario (auth.users y perfiles)
+export async function eliminarUsuarioDefinitivo(usuarioId: string) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin()
+
+    // 1. Desvincular cualquier aula que tenga asignada
+    await supabaseAdmin
+      .from('perfiles')
+      .update({ seccion_id: null })
+      .eq('id', usuarioId)
+
+    // 2. Eliminar de la tabla perfiles
+    const { error: errorPerfil } = await supabaseAdmin
+      .from('perfiles')
+      .delete()
+      .eq('id', usuarioId)
+
+    if (errorPerfil) throw errorPerfil
+
+    // 3. Eliminar de auth.users (borrado completo de credenciales)
+    const { error: errorAuth } = await supabaseAdmin.auth.admin.deleteUser(usuarioId)
+    if (errorAuth) throw errorAuth
+
+    revalidatePath('/admin')
+    revalidatePath('/dashboard')
+    revalidatePath('/')
+
+    return { ok: true, mensaje: 'Usuario eliminado permanentemente del sistema.' }
+  } catch (err: any) {
+    return { ok: false, error: err.message || 'Error al eliminar usuario.' }
+  }
+}

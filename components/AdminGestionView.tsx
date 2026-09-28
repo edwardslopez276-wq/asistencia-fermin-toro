@@ -11,6 +11,7 @@ import {
   actualizarPerfilPersonal,
   resetearClavePersonal,
   alternarEstadoPersonal,
+  eliminarUsuarioDefinitivo,
 } from '@/app/actions/admin'
 import { crearUsuarioAction, RolUsuario } from '@/app/actions/usuarios'
 
@@ -180,6 +181,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
   const [cedulaPersonal, setCedulaPersonal] = useState('')
   const [emailPersonal, setEmailPersonal] = useState('')
   const [passwordPersonal, setPasswordPersonal] = useState('')
+  const [confirmPasswordPersonal, setConfirmPasswordPersonal] = useState('')
   const [nombresPersonal, setNombresPersonal] = useState('')
   const [apellidosPersonal, setApellidosPersonal] = useState('')
   const [rolPersonal, setRolPersonal] = useState<RolUsuario>('DOCENTE')
@@ -359,31 +361,46 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
     const cedulaLimpia = cedulaPersonal.trim().toUpperCase()
     const emailLimpio = emailPersonal.trim().toLowerCase()
     const passwordLimpio = passwordPersonal.trim()
+    const confirmPasswordLimpio = confirmPasswordPersonal.trim()
     const nombresLimpios = nombresPersonal.trim()
     const apellidosLimpios = apellidosPersonal.trim()
 
-    if (!cedulaLimpia || !emailLimpio || !passwordLimpio || !nombresLimpios || !apellidosLimpios) {
+    if (!cedulaLimpia || !emailLimpio || !passwordLimpio || !confirmPasswordLimpio || !nombresLimpios || !apellidosLimpios) {
       setErrorModalPersonal('Todos los campos son obligatorios y no pueden contener solo espacios.')
+      return
+    }
+
+    if (passwordLimpio.length < 6) {
+      setErrorModalPersonal('La contraseña debe tener al menos 6 caracteres.')
+      return
+    }
+
+    if (passwordLimpio !== confirmPasswordLimpio) {
+      setErrorModalPersonal('Las contraseñas no coinciden. Por favor verifícalas.')
       return
     }
 
     if (['DIRECTOR', 'DIRECTIVO'].includes(rolPersonal)) {
       const directorActual = perfiles.find(
-        (p) => (p.rol as string) === 'DIRECTOR' || (p.rol as string) === 'DIRECTIVO'
+        (p) =>
+          ((p.rol as string) === 'DIRECTOR' || (p.rol as string) === 'DIRECTIVO') &&
+          p.activo !== false
       )
       if (directorActual) {
         setErrorModalPersonal(
-          `Ya existe un Director titular en el plantel (${directorActual.nombres} ${directorActual.apellidos}). No está permitido registrar dos directores.`
+          `Ya existe un Director titular activo en el plantel (${directorActual.nombres} ${directorActual.apellidos}). Debe desactivarlo o eliminarlo primero.`
         )
         return
       }
     }
 
     if (rolPersonal === 'SUBDIRECTOR') {
-      const subdirectorActual = perfiles.find((p) => (p.rol as string) === 'SUBDIRECTOR')
+      const subdirectorActual = perfiles.find(
+        (p) => (p.rol as string) === 'SUBDIRECTOR' && p.activo !== false
+      )
       if (subdirectorActual) {
         setErrorModalPersonal(
-          `Ya existe un Subdirector titular en el plantel (${subdirectorActual.nombres} ${subdirectorActual.apellidos}). No está permitido registrar dos subdirectores.`
+          `Ya existe un Subdirector titular activo en el plantel (${subdirectorActual.nombres} ${subdirectorActual.apellidos}). Debe desactivarlo o eliminarlo primero.`
         )
         return
       }
@@ -422,6 +439,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
       setCedulaPersonal('')
       setEmailPersonal('')
       setPasswordPersonal('')
+      setConfirmPasswordPersonal('')
       setNombresPersonal('')
       setApellidosPersonal('')
       setSeccionPersonalId('')
@@ -528,6 +546,22 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
       router.refresh()
     } else {
       mostrarNotificacion(res.error || 'Error al cambiar estado.', 'error')
+    }
+  }
+
+  // Eliminación permanente y total de un usuario
+  const handleEliminarDefinitivo = async (p: PerfilAdmin) => {
+    const confirmacion = prompt(
+      `⚠️ ATENCIÓN: Esta acción eliminará permanentemente la cuenta de ${p.nombres} ${p.apellidos} (${p.rol}).\n\nEscribe "ELIMINAR" para confirmar:`
+    )
+    if (confirmacion !== 'ELIMINAR') return
+
+    const res = await eliminarUsuarioDefinitivo(p.id)
+    if (res.ok) {
+      mostrarNotificacion(res.mensaje || 'Usuario eliminado permanentemente.', 'ok')
+      router.refresh()
+    } else {
+      mostrarNotificacion(res.error || 'Error al eliminar usuario.', 'error')
     }
   }
 
@@ -863,6 +897,8 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                 setErrorModalPersonal(null)
                 const primeraLibre = secciones.find((s) => !docentesPorSeccion[Number(s.id)])
                 setSeccionPersonalId(primeraLibre ? Number(primeraLibre.id) : '')
+                setPasswordPersonal('')
+                setConfirmPasswordPersonal('')
                 setMostrarModalPersonal(true)
               }}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer"
@@ -935,7 +971,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center justify-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => abrirEdicionPersonal(p)}
@@ -962,11 +998,19 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                               title={estaActivo ? 'Desactivar usuario (baja lógica)' : 'Reactivar usuario'}
                               className={`p-1.5 rounded-lg transition ${
                                 estaActivo
-                                  ? 'text-rose-600 hover:text-rose-800 hover:bg-rose-50'
+                                  ? 'text-amber-600 hover:text-amber-800 hover:bg-amber-50'
                                   : 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50'
                               }`}
                             >
                               {estaActivo ? '🚫' : '🔄'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleEliminarDefinitivo(p)}
+                              title="Eliminar usuario permanentemente"
+                              className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition"
+                            >
+                              🗑️
                             </button>
                           </div>
                         </td>
@@ -1413,7 +1457,7 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                   />
                 </div>
 
-                <div className="col-span-2">
+                <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                     Contraseña Inicial *
                   </label>
@@ -1425,6 +1469,22 @@ export default function AdminGestionView({ secciones, estudiantes, perfiles }: P
                     value={passwordPersonal}
                     onKeyDown={bloquearEspacio}
                     onChange={(e) => setPasswordPersonal(e.target.value)}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                    Confirmar Contraseña *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    placeholder="Repite la contraseña"
+                    value={confirmPasswordPersonal}
+                    onKeyDown={bloquearEspacio}
+                    onChange={(e) => setConfirmPasswordPersonal(e.target.value)}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
