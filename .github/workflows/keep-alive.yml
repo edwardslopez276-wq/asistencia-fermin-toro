@@ -2,7 +2,7 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # Ejecuta todos los días a las 10:00 AM UTC (6:00 AM hora Venezuela)
+    # Todos los días a las 10:00 AM UTC (6:00 AM Venezuela)
     - cron: '0 10 * * *'
   workflow_dispatch:
 
@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Ping Endpoint Keep-Alive
         run: |
-          HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" "https://TU-DOMINIO.vercel.app/api/keep-alive")
+          HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" "https://asistencia-fermin-toro.vercel.app/api/keep-alive")
           cat /tmp/response.json
           echo ""
           echo "HTTP Status: $HTTP_STATUS"
