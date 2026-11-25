@@ -2,6 +2,13 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Permitir el acceso directo al endpoint de keep-alive sin exigir sesión
+  if (pathname.startsWith('/api/keep-alive')) {
+    return NextResponse.next()
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -30,7 +37,6 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  const { pathname } = request.nextUrl
 
   // 1. Si no hay sesión y no está en /login, redirigir a /login
   if (!user && pathname !== '/login') {
@@ -74,8 +80,8 @@ export const config = {
   matcher: [
     /*
      * Aplica el middleware a todas las rutas excepto recursos estáticos,
-     * imágenes y archivos multimedia.
+     * imágenes, archivos multimedia y el endpoint api/keep-alive.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/keep-alive|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
